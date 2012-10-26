@@ -1,5 +1,5 @@
 TODO list for Perl module Tutorial::Elastic::Search::With::Perl::First::Steps::Cheat::Sheet
 
-- Nothing yet
-
-
+- add example of: geo_bounding_box or geo_polygon
+  which is mainly: search a point inside a polygon.. or in another words:
+  search places inside a region/neighborhood

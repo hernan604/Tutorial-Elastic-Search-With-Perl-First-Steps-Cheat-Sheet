@@ -95,7 +95,6 @@ This module has code also, so you can read the methos and see how they are execu
         my $cidades = &cidades();
     #   my @lines = read_file("/home/youruser/Downloads/worldcitiespop.txt"); #get at maxmind.com
         my @lines = split /\n/, $cidades;
-        my @rows;
         my $id = 0;
           foreach my $line ( @lines ) {
               $line =~ s/\n//g;
@@ -208,11 +207,14 @@ sub create_index {
     );
 }
 
-delete_index();sleep 1;
-create_index();sleep 1;
+delete_index();
+$es->cluster_health(wait_for_status=>'yellow');
+create_index();
+$es->cluster_health(wait_for_status=>'yellow');
 alter_mapping_for_geo_point_distance();
 insert_cities();
-sleep 1; search_by_proximity();
+$es->cluster_health(wait_for_status=>'yellow');
+search_by_proximity();
 
 sub alter_mapping_for_geo_point_distance {
     my $result = $es->put_mapping(
@@ -243,7 +245,6 @@ sub crud_create {
 sub insert_cities {
     my $cidades = &cidades();
     my @lines = split /\n/, $cidades;
-    my @rows;
     my $id = 0;
     foreach my $line ( @lines ) {
         $line =~ s/\n//g;
