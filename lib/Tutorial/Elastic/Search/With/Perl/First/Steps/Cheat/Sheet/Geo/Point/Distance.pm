@@ -156,7 +156,43 @@ This module has code also, so you can read the methos and see how they are execu
         );
     }
 
+=head2 Search cities inside a region (polygon of coordinates)
+
+    This is useful when you search within inside a region.
+
+    sub search_inside_polygon {
+        my ( $self ) = @_;
+        my $item = $es->search(
+            {
+                index => 'world',
+                type  => 'cidade',
+                "query" => {
+                    "match_all" => {}
+                },
+                "filter" => {
+                    "geo_polygon" => {
+                        "location" => {
+                            "points" => [
+                                {"lat" => -22.847071, "lon" => -46.483154},
+                                {"lat" => -23.322080, "lon" => -47.702637},
+                                {"lat" => -24.657002, "lon" => -47.131348},
+                                {"lat" => -23.926013, "lon" => -44.725342},
+                                {"lat" => -22.593726, "lon" => -46.208496},
+                                {"lat" => -22.847071, "lon" => -46.483154},
+                            ]
+                        }
+                    }
+                },
+            }
+        );
+        return $item;
+    }
+
+
 =head2 Distance between 2 coordinate points
+
+    This has nothing to do with elastic search and you get the distances upon your ES searches.
+    However, i decided to include this information since it is related coordinates and theory on how to calculate distance between two points. And even tho ES already gives you this information, this is the way you can do it with pure math and Haversine formula..
 
     use GIS::Distance;
     my $gis = GIS::Distance->new(); # defaults to Haversine formula!u can change
@@ -207,14 +243,16 @@ sub create_index {
     );
 }
 
-delete_index();
-$es->cluster_health(wait_for_status=>'yellow');
-create_index();
-$es->cluster_health(wait_for_status=>'yellow');
-alter_mapping_for_geo_point_distance();
-insert_cities();
-$es->cluster_health(wait_for_status=>'yellow');
-search_by_proximity();
+#   delete_index();
+#   $es->cluster_health(wait_for_status=>'yellow');
+#   create_index();
+#   $es->cluster_health(wait_for_status=>'yellow');
+#   alter_mapping_for_geo_point_distance();
+#   insert_cities();
+#   $es->cluster_health(wait_for_status=>'yellow');
+#   search_by_proximity();
+my $item =search_inside_polygon();
+warn p $item;
 
 sub alter_mapping_for_geo_point_distance {
     my $result = $es->put_mapping(
@@ -304,6 +342,38 @@ sub search_by_proximity {
     );
 
 }
+
+sub search_inside_polygon {
+    my ( $self ) = @_;
+
+    my $item = $es->search(
+        {
+            index => 'world',
+            type  => 'cidade',
+            "query" => {
+                "match_all" => {}
+            },
+            "filter" => {
+                "geo_polygon" => {
+                    "location" => {
+                        "points" => [
+                            {"lat" => -22.847071, "lon" => -46.483154},
+                            {"lat" => -23.322080, "lon" => -47.702637},
+                            {"lat" => -24.657002, "lon" => -47.131348},
+                            {"lat" => -23.926013, "lon" => -44.725342},
+                            {"lat" => -22.593726, "lon" => -46.208496},
+                            {"lat" => -22.847071, "lon" => -46.483154},
+                        ]
+                    }
+                }
+            },
+        }
+    );
+    return $item;
+
+}
+
+
 
 sub cidades {
 my $world_city_maxmind = <<'CITY';
